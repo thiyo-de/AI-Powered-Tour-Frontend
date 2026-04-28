@@ -24,10 +24,10 @@
     const style = document.createElement("style");
     style.id = styleId;
     style.textContent = `
-    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-       PANOLIST MODAL â€” Premium Navy Theme
+    /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+       PANOLIST MODAL â€" Premium Navy Theme
        Matching Explore, Search, Contact
-       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
     #pano-modal-container {
       display: none !important;
@@ -537,20 +537,6 @@
   let allPanoramas = [];
   let selectedIndex = -1;
 
-  // ── Hardcoded mainPlayList order from 3DVista export ──
-  // This MUST match the "items" array in mainPlayList inside script_general.js.
-  // Index = playlist position used by tour.setMainMediaByIndex().
-  const PLAYLIST_ORDER = [
-    { id: "F17EF106_FF61_B012_41CC_A24A1654DEAE",  label: "Entrance" },
-    { id: "EA2AD225_FA39_B470_41E6_1FBAE0575A7E",  label: "Football Ground" },
-    { id: "EAD83496_FA36_9C50_41E0_9B38F5EBBEF2",  label: "Front Entrance" },
-    { id: "EA417904_FA36_9430_41D7_A56106D08C5A",  label: "School Courtyard" },
-    { id: "EA78059D_FA09_BC50_41EB_C809336336E4",  label: "Computer Lab" },
-    { id: "EA65FD5F_FA3A_6CCE_41BB_D5F6990331A3",  label: "Chemistry Lab" },
-    { id: "EA4A7813_FA09_9450_41E5_744BD174BF63",  label: "Library" },
-    { id: "EA4AADCF_FA0A_AC30_41E5_FBD574E96707",  label: "KG Classroom" }
-  ];
-
   function renderList(items, query = "") {
     contentArea.innerHTML = '';
     if (!items || items.length === 0) {
@@ -606,42 +592,35 @@
     renderList(filtered, q);
   });
 
-  // --- Build panorama list from hardcoded order + local thumbnails ---
+  // --- Build panorama list dynamically from 3DVista API ---
   function loadData() {
     try {
-      // Use en.txt labels if available (for locale support), otherwise use hardcoded labels
-      fetch("./locale/en.txt").then(r => r.text()).then(enTxt => {
-        const labelMap = {};
-        enTxt.split("\n").forEach(line => {
-          const m = line.match(/panorama_([A-Z0-9_]+)\.label\s*=\s*(.+)/);
-          if (m) {
-            labelMap[m[1].trim()] = m[2].trim().replace(/^"|"$/g, "");
-          }
-        });
+      // Wait for 3DVista Player to mount to the window
+      if (!window.tour || !window.tour.player || !window.tour.player.getById('mainPlayList')) {
+        setTimeout(loadData, 500); // Poll every 500ms until the engine is ready
+        return;
+      }
 
-        // Build panorama list in mainPlayList order
-        allPanoramas = PLAYLIST_ORDER.map((entry, idx) => ({
-          id: entry.id,
-          label: labelMap[entry.id] || entry.label,
-          playlistIndex: idx,
-          thumb: "media/panorama_" + entry.id + "_t.webp"
-        }));
+      // Extract the exact active playlist order defined inside the 3DVista project
+      const rawItems = window.tour.player.getById('mainPlayList').get('items');
 
-        renderList(allPanoramas);
-      }).catch(function () {
-        // Fallback: use hardcoded labels + local thumbnails
-        allPanoramas = PLAYLIST_ORDER.map((entry, idx) => ({
-          id: entry.id,
-          label: entry.label,
-          playlistIndex: idx,
-          thumb: "media/panorama_" + entry.id + "_t.webp"
-        }));
-        renderList(allPanoramas);
+      allPanoramas = rawItems.map((item, idx) => {
+        const media = item.get('media');
+        const id = media.get('id');
+        const label = media.get('data') && media.get('data').label ? media.get('data').label : "Panorama " + (idx + 1);
+
+        return {
+          id: id,
+          label: label,
+          playlistIndex: idx, // CRITICAL: This is the exact integer index passed to setMediaByIndex
+          thumb: id.startsWith('panorama_') ? `media/${id}_t.webp` : `media/panorama_${id}_t.webp`
+        };
       });
 
+      renderList(allPanoramas);
     } catch (err) {
-      console.error(err);
-      contentArea.innerHTML = `<div class="pano-status-msg">Could not load data</div>`;
+      console.error("[Panolist] Failed to dynamically extract panoramas:", err);
+      contentArea.innerHTML = `<div class="pano-status-msg">Could not load panoramas</div>`;
     }
   }
 

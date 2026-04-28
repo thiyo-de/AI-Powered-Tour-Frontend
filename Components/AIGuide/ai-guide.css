@@ -1,0 +1,516 @@
+:root {
+    --ai-bg: rgba(11, 17, 33, 0.85);
+    --ai-orb-glow: #00F0FF;
+    --ai-orb-idle: #0055FF;
+    --ai-orb-speak: #FF00E4;
+    --ai-text-main: #FFFFFF;
+    --ai-text-muted: #8FA6C1;
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --font: "Satoshi", sans-serif;
+}
+
+/* Floating Action Button (Entry Point) */
+.ai-guide-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #00F0FF, #0055FF);
+    box-shadow: 0 8px 32px rgba(0, 85, 255, 0.5);
+    z-index: 99999;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.ai-guide-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 12px 40px rgba(0, 240, 255, 0.6);
+}
+.ai-guide-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: white;
+}
+
+/* Main Dashboard Overlay (Mini-Panel) */
+.ai-dashboard-overlay {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 380px;
+    height: calc(100vh - 40px);
+    max-height: 700px;
+    z-index: 99998;
+    background: var(--ai-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-20px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-family: var(--font);
+    color: var(--ai-text-main);
+}
+.ai-dashboard-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0);
+}
+
+/* Layout Grid */
+.ai-dashboard-grid {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    padding: 0;
+    box-sizing: border-box;
+    gap: 0;
+    overflow-y: auto;
+}
+.ai-dashboard-grid::-webkit-scrollbar { display: none; }
+
+/* Side Panels */
+.ai-side-panel {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--glass-border);
+    border-radius: 0;
+    padding: 20px;
+    display: none; /* Hidden by default, shown when suggestions exist */
+    flex-direction: column;
+    gap: 15px;
+    flex-shrink: 0;
+    max-height: 300px;
+}
+.ai-side-panel::-webkit-scrollbar { display: none; }
+.ai-side-panel.right {
+    display: none; /* Hide right panel in mini mode */
+}
+.ai-panel-title {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--ai-text-muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+/* Center Stage (Orb & Text) */
+.ai-center-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex: 1;
+    padding: 20px;
+    min-height: 0;
+}
+
+/* The Voice Orb - Liquid Aura */
+.ai-orb-container {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* The 3D Glass Sphere Shell */
+.ai-orb-glass {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    /* Whiter frosted glass background */
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.25) 100%);
+    /* Removed sharp border for softer edges, using inset shadow instead */
+    border: none;
+    box-shadow: 
+        inset 0 0 20px rgba(255, 255, 255, 0.4), /* Soft inner rim */
+        0 10px 30px rgba(0, 0, 0, 0.5);          /* Drop shadow */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    backdrop-filter: blur(4px); /* Slightly stronger blur for frosted look */
+    z-index: 10;
+    transition: box-shadow 0.8s ease, background 0.8s ease;
+}
+
+/* Glass Active States (White Glow with Soft Edges) */
+.ai-orb-glass:has(.ai-orb.listening),
+.ai-orb-glass:has(.ai-orb.speaking),
+.ai-orb-glass:has(.ai-orb.thinking) {
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.4) 100%);
+    box-shadow: 
+        inset 0 0 30px rgba(255, 255, 255, 0.8), /* Strong, soft white inner glow */
+        0 0 40px rgba(255, 255, 255, 0.5);       /* Expansive soft outer white aura */
+}
+
+/* Specular Reflection (The 3D Glint) */
+.ai-orb-glass::before {
+    content: '';
+    position: absolute;
+    top: 15%;
+    left: 20%;
+    width: 30%;
+    height: 15%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.4), transparent);
+    border-radius: 50%;
+    transform: rotate(-35deg);
+    z-index: 15;
+    pointer-events: none;
+}
+
+.ai-orb {
+    position: relative;
+    width: 40px; /* Made core slightly smaller to fit glass */
+    height: 40px;
+    border-radius: 50%;
+    background: #00F0FF;
+    /* Transition everything except transform (which JS handles) */
+    transition: opacity 0.8s ease, filter 0.8s ease, background 0.8s ease;
+    animation: orbCore 4s infinite ease-in-out;
+    z-index: 2;
+    opacity: 0.5; /* Dimmier when idle */
+    filter: blur(8px);
+}
+
+/* Liquid Blob Layers */
+.ai-orb::before, .ai-orb::after {
+    content: '';
+    position: absolute;
+    inset: -30px;
+    border-radius: 45% 55% 40% 60% / 55% 45% 60% 40%;
+    mix-blend-mode: screen;
+    animation: liquidSpin 6s infinite linear;
+    transition: all 0.8s ease;
+    z-index: 1;
+}
+
+.ai-orb::before {
+    background: radial-gradient(circle at 30% 30%, #00F0FF 20%, transparent 80%);
+    animation-duration: 5s;
+    animation-direction: reverse;
+}
+
+.ai-orb::after {
+    background: radial-gradient(circle at 70% 70%, #FF00E4 20%, transparent 80%);
+    animation-duration: 7s;
+    opacity: 0; /* Hide Magenta layer when idle */
+}
+
+/* Organic Morphing Animations */
+@keyframes liquidSpin {
+    0% { transform: rotate(0deg) scale(1); border-radius: 45% 55% 40% 60% / 55% 45% 60% 40%; }
+    50% { transform: rotate(180deg) scale(1.1); border-radius: 55% 45% 60% 40% / 45% 55% 40% 60%; }
+    100% { transform: rotate(360deg) scale(1); border-radius: 45% 55% 40% 60% / 55% 45% 60% 40%; }
+}
+
+@keyframes orbCore {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Listening State - Expands into wide cyan aura */
+.ai-orb.listening {
+    background: #00B3FF;
+    opacity: 1;
+}
+.ai-orb.listening::before, .ai-orb.listening::after {
+    inset: -45px;
+    animation-duration: 3s;
+}
+.ai-orb.listening::after {
+    background: radial-gradient(circle at 70% 70%, #00F0FF 20%, transparent 80%);
+    opacity: 0.5;
+}
+
+/* Thinking State - Fast colorful spin */
+.ai-orb.thinking {
+    background: #FF00E4;
+    opacity: 1;
+}
+.ai-orb.thinking::after {
+    opacity: 1;
+}
+.ai-orb.thinking::before, .ai-orb.thinking::after {
+    animation-duration: 1.5s;
+}
+
+/* Speaking State - Realtime audio reaction */
+.ai-orb.speaking {
+    /* Stop CSS animation so JS transform can take over smoothly! */
+    animation: none !important;
+    /* We only disable transform transition to avoid fighting the JS visualizer */
+    transition: opacity 0.8s ease, filter 0.8s ease !important;
+    opacity: 1; /* Wake up! */
+}
+
+.ai-orb.speaking::after {
+    opacity: 1; /* Fade in the vibrant Magenta aura */
+}
+
+.ai-orb.speaking::before, .ai-orb.speaking::after {
+    /* Speed up rotation for energy */
+    animation-duration: 2.5s;
+    inset: -35px;
+}
+
+/* Browser TTS Glass Pulse (fallback when no AudioContext available) */
+.ai-orb-glass.browser-tts-pulse {
+    animation: glassPulse 1.2s ease-in-out infinite;
+}
+@keyframes glassPulse {
+    0%, 100% { transform: scale(1); }
+    30% { transform: scale(1.08); }
+    60% { transform: scale(1.03); }
+    80% { transform: scale(1.1); }
+}
+
+/* Status / Subtitle Text */
+.ai-status-text {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ai-text-main);
+    text-align: center;
+    max-width: 90%;
+    min-height: 50px;
+    max-height: 120px;         /* scroll box — shows ~4 lines before scrolling */
+    line-height: 1.4;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    overflow-y: auto;
+    scroll-behavior: smooth;   /* smooth auto-scroll when active word is off-screen */
+}
+.ai-status-text::-webkit-scrollbar { display: none; }
+
+/* Control Dock */
+.ai-control-dock {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 16px 24px;
+    border-radius: 0;
+    border: none;
+    border-top: 1px solid var(--glass-border);
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+}
+.ai-dock-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid transparent;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    transition: all 0.2s;
+}
+.ai-dock-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
+.ai-dock-btn.active {
+    background: rgba(0, 240, 255, 0.2);
+    border-color: #00F0FF;
+    color: #00F0FF;
+}
+.ai-dock-btn.close-btn {
+    background: rgba(255, 69, 69, 0.1);
+}
+.ai-dock-btn.close-btn:hover {
+    background: rgba(255, 69, 69, 0.3);
+}
+
+/* TTS Mode Toggle — same circular style as other dock buttons */
+.ai-dock-btn.ai-tts-toggle {
+    position: relative; /* for badge positioning */
+    color: var(--ai-text-muted);
+    transition: all 0.25s ease;
+}
+.ai-dock-btn.ai-tts-toggle:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.15);
+}
+
+/* HD badge — small pill in top-right corner, hidden by default (browser mode) */
+.ai-tts-badge {
+    display: none; /* shown only in AI HD mode */
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: linear-gradient(135deg, #00F0FF, #0055FF);
+    color: #fff;
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    padding: 1px 4px;
+    border-radius: 6px;
+    line-height: 1.4;
+    pointer-events: none;
+}
+
+/* AI HD mode — cyan glow ring, badge visible */
+.ai-dock-btn.ai-tts-toggle.ai-tts-active {
+    background: rgba(0, 240, 255, 0.12);
+    border-color: #00F0FF;
+    color: #00F0FF;
+    box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.4),
+                0 0 14px rgba(0, 240, 255, 0.2);
+}
+.ai-dock-btn.ai-tts-toggle.ai-tts-active:hover {
+    background: rgba(0, 240, 255, 0.2);
+    box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.6),
+                0 0 20px rgba(0, 240, 255, 0.35);
+}
+.ai-dock-btn.ai-tts-toggle.ai-tts-active .ai-tts-badge {
+    display: flex;
+}
+
+/* Suggestions & Cards */
+.ai-suggestions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.ai-suggestion-chip {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-border);
+    color: var(--ai-text-main);
+    padding: 14px 20px;
+    border-radius: 16px;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.ai-suggestion-chip:hover {
+    background: rgba(0, 240, 255, 0.1);
+    border-color: rgba(0, 240, 255, 0.3);
+    transform: translateX(5px);
+}
+
+/* Info Card */
+.ai-info-card {
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid var(--glass-border);
+}
+.ai-info-card img {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+/* Keyboard Input Overlay */
+.ai-keyboard-input {
+    position: relative;
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: none;
+    transform: none;
+    background: rgba(0,0,0,0.8);
+    border: none;
+    border-top: 1px solid var(--glass-border);
+    border-radius: 0;
+    padding: 8px 16px;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    z-index: 100;
+    flex-shrink: 0;
+}
+.ai-keyboard-input.active {
+    display: flex;
+}
+.ai-keyboard-input input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    padding: 12px 8px;
+    outline: none;
+    font-family: var(--font);
+}
+.ai-keyboard-input input::placeholder {
+    color: var(--ai-text-muted);
+}
+.ai-keyboard-input button {
+    background: var(--primary-blue);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+}
+
+/* Mobile Responsive */
+@media (max-width: 900px) {
+    .ai-dashboard-grid {
+        display: flex;
+        flex-direction: column;
+        padding: 40px 20px;
+        justify-content: center;
+    }
+    .ai-side-panel {
+        display: none; /* Hide side panels on mobile for immersion */
+    }
+    .ai-orb-container {
+        width: 180px;
+        height: 180px;
+    }
+    .ai-orb {
+        width: 100px;
+        height: 100px;
+    }
+    .ai-status-text {
+        font-size: 20px;
+        margin-top: 30px;
+    }
+}
+
+/* ── Karaoke Word Highlight ─────────────────────────────────────────── */
+.tts-word {
+    display: inline;
+    border-radius: 4px;
+    padding: 1px 2px;
+    margin: 0 1px;
+    transition: background 0.1s ease, color 0.1s ease, text-shadow 0.1s ease;
+}
+.tts-word-active {
+    background: rgba(0, 240, 255, 0.28);
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.9), 0 0 20px rgba(0, 240, 255, 0.4);
+    border-radius: 4px;
+    padding: 1px 4px;
+}

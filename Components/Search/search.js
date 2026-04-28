@@ -444,6 +444,9 @@
         return (title && url) ? { title, url } : null;
       }).filter(Boolean);
 
+      // ── AI-callable global: open_related_campus uses this ────────
+      window.relatedCampuses = ProjectLinks;
+
     } catch (e) { console.warn("Search Data Load Error", e); }
   }
   loadData();

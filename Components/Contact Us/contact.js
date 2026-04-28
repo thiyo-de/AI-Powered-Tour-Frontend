@@ -381,6 +381,10 @@
         document.dispatchEvent(new CustomEvent('menuItemDeactivate', { detail: { id: 'menu-contact' } }));
     }
 
+    // ── AI-callable global API ────────────────────────────────────
+    window.openContact  = openContact;
+    window.closeContact = closeContact;
+
     closeBtn.addEventListener('click', closeContact);
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) closeContact();

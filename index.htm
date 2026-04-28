@@ -51,6 +51,8 @@
         }
     </style>
     <link rel="stylesheet" href="fonts.css?v=1774264168752">
+    <!-- AI Guide CSS -->
+    <link rel="stylesheet" href="Components/AIGuide/ai-guide.css">
 </head>
 
 <body>
@@ -78,13 +80,28 @@
                             "Components/gsv_explore/gsv_explore.js",
                             "Components/Logo/logo.js",
                             "Components/Location/location.js",
-                        ];
+                         ];
+                        // Cache-buster: unique per page load — no manual cache clearing needed
+                        var cacheBust = '?v=' + Date.now();
+
+                        // Load all non-AI components async (parallel, order doesn't matter)
                         scripts.forEach(function (src) {
                             var script = document.createElement("script");
-                            script.src = src;
+                            script.src = src + cacheBust;
                             script.async = true;
                             document.body.appendChild(script);
                         });
+
+                        // AI Guide: MUST load sequentially — ai-guide.js depends on CONFIG
+                        // set by config.js. Using onload chain guarantees execution order.
+                        var configScript = document.createElement("script");
+                        configScript.src = "Components/AIGuide/config.js" + cacheBust;
+                        configScript.onload = function () {
+                            var guideScript = document.createElement("script");
+                            guideScript.src = "Components/AIGuide/ai-guide.js" + cacheBust;
+                            document.body.appendChild(guideScript);
+                        };
+                        document.body.appendChild(configScript);
                     });
                 };
                 document.body.appendChild(musicScript);
