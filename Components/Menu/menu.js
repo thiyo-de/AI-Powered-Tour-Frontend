@@ -589,21 +589,28 @@
     let isOpen = false;
 
     // ── AI-callable global API ───────────────────────────────────
+    window.isMenuOpen = function() {
+        return typeof isOpen !== 'undefined' ? isOpen : false;
+    };
     window.openMenu = function () {
-        if (!isOpen) {
+        if (!window.isMenuOpen()) {
             isOpen = true;
             toggleBtn.classList.add('open');
             panel.classList.add('open');
             toggleBtn.querySelector('i').classList.replace('fa-bars', 'fa-xmark');
+            return true;
         }
+        return false;
     };
     window.closeMenu = function () {
-        if (isOpen) {
+        if (window.isMenuOpen()) {
             isOpen = false;
             toggleBtn.classList.remove('open');
             panel.classList.remove('open');
             toggleBtn.querySelector('i').classList.replace('fa-xmark', 'fa-bars');
+            return true;
         }
+        return false;
     };
 
     toggleBtn.addEventListener("click", () => {

@@ -382,8 +382,23 @@
     }
 
     // ── AI-callable global API ────────────────────────────────────
-    window.openContact  = openContact;
-    window.closeContact = closeContact;
+    window.isContactOpen = function() {
+        return overlay.classList.contains('active');
+    };
+    window.openContact = function() {
+        if (!window.isContactOpen()) {
+            openContact();
+            return true;
+        }
+        return false;
+    };
+    window.closeContact = function() {
+        if (window.isContactOpen()) {
+            closeContact();
+            return true;
+        }
+        return false;
+    };
 
     closeBtn.addEventListener('click', closeContact);
     overlay.addEventListener('click', (e) => {
