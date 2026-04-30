@@ -3,7 +3,7 @@
 //   'development' → localhost:3002  (local npm run dev)
 //   'production'  → Render hosted backend
 // ──────────────────────────────────────────────────────────────────────────
-const AI_ENV = 'development';   // ← CHANGE THIS TO SWITCH
+const AI_ENV = 'production';   // ← CHANGE THIS TO SWITCH
 
 const AI_ENDPOINTS = {
     development: {
@@ -17,10 +17,10 @@ const AI_ENDPOINTS = {
 const _ep = AI_ENDPOINTS[AI_ENV] || AI_ENDPOINTS.production;
 
 window.AIGuideConfig = {
-    ENV:              AI_ENV,
-    TTS_API:          _ep.TTS_API,
-    SESSION_ID:       'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8),
-    VOICE_ENABLED:    true,
+    ENV: AI_ENV,
+    TTS_API: _ep.TTS_API,
+    SESSION_ID: 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8),
+    VOICE_ENABLED: true,
     SUBTITLES_ENABLED: true
 };
 
