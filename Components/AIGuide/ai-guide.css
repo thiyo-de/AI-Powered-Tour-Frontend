@@ -484,7 +484,10 @@
         justify-content: center;
     }
     .ai-side-panel {
-        display: none; /* Hide side panels on mobile for immersion */
+        /* BUG FIX: was 'display: none' — suggestions were invisible on all mobile/tablet */
+        display: flex;
+        max-height: 180px;
+        overflow-y: auto;
     }
     .ai-orb-container {
         width: 180px;
@@ -504,14 +507,15 @@
 .tts-word {
     display: inline;
     border-radius: 4px;
-    padding: 1px 2px;
+    /* Fixed padding on ALL states — prevents layout reflow/line-jump on toggle */
+    padding: 1px 4px;
     margin: 0 1px;
-    transition: background 0.1s ease, color 0.1s ease, text-shadow 0.1s ease;
+    transition: background 0.08s ease, color 0.08s ease, text-shadow 0.08s ease;
+    color: rgba(255,255,255,0.55);   /* dim inactive words */
 }
 .tts-word-active {
     background: rgba(0, 240, 255, 0.28);
-    color: #ffffff;
+    color: #ffffff;                  /* full brightness on active word */
     text-shadow: 0 0 10px rgba(0, 240, 255, 0.9), 0 0 20px rgba(0, 240, 255, 0.4);
     border-radius: 4px;
-    padding: 1px 4px;
 }

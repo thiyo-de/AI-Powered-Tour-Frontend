@@ -3,7 +3,7 @@
 //   'development' → localhost:3002  (local npm run dev)
 //   'production'  → Render hosted backend
 // ──────────────────────────────────────────────────────────────────────────
-const AI_ENV = 'production';   // ← CHANGE THIS TO SWITCH
+const AI_ENV = 'development';   // ← CHANGE THIS TO SWITCH
 
 const AI_ENDPOINTS = {
     development: {
