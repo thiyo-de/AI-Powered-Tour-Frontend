@@ -1539,7 +1539,8 @@
                             this.wakeUp();
 
                             // Extract anything said AFTER the wake word
-                            const parts = fullTranscript.split(new RegExp(`(${this.wakeWord}|hey from|hay vista|hey mr|hey guide|assistant)`));
+                            const wakeWordRegex = new RegExp(`(${this.wakeWord}|hey from|hay vista|hey mr|hey guide|hey ai|hey vista ai|assistant)`);
+                            const parts = fullTranscript.split(wakeWordRegex);
                             const command = parts.length > 2 ? parts.pop().trim() : "";
 
                             if (command) {
@@ -1549,11 +1550,15 @@
                         }
                     } else {
                         // We are awake, capture command
-                        const parts = fullTranscript.split(new RegExp(`(${this.wakeWord}|hey from|hay vista|hey mr|hey guide|assistant)`));
+                        const wakeWordRegex = new RegExp(`(${this.wakeWord}|hey from|hay vista|hey mr|hey guide|hey ai|hey vista ai|assistant)`);
+                        const parts = fullTranscript.split(wakeWordRegex);
                         const command = parts.length > 2 ? parts.pop().trim() : fullTranscript;
 
-                        UI.statusText.textContent = `"${command}"`;
-                        this.resetCommandTimeout(command);
+                        // Only process if the command isn't empty (e.g. they just said the wake word)
+                        if (command) {
+                            UI.statusText.textContent = `"${command}"`;
+                            this.resetCommandTimeout(command);
+                        }
                     }
                 };
 
