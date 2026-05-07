@@ -535,50 +535,6 @@
     }
 }
 
-/* Mobile Responsive - Strict Phones (< 480px) */
-@media (max-width: 480px) {
-    .ai-dashboard-overlay {
-        top: 0; 
-        left: 0; 
-        right: 0; 
-        bottom: 0;
-        width: 100%; 
-        height: 100vh;
-        height: 100dvh;
-        max-height: none;
-        border-radius: 0;
-        border: none;
-    }
-    
-    .ai-orb-container {
-        width: 120px; 
-        height: 120px;
-    }
-    
-    .ai-orb-glass {
-        width: 80px;
-        height: 80px;
-    }
-
-    .ai-suggestions-list {
-        flex-direction: row;
-        overflow-x: auto;
-        padding-bottom: 10px;
-        scroll-snap-type: x mandatory;
-    }
-    
-    .ai-suggestion-chip {
-        scroll-snap-align: start;
-        white-space: nowrap;
-    }
-
-    .ai-guide-btn {
-        top: auto; 
-        bottom: 20px;
-        right: 20px;
-    }
-}
-
 /* ── Karaoke Word Highlight ─────────────────────────────────────────── */
 .tts-word {
     display: inline;
