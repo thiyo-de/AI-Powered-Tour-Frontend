@@ -805,6 +805,10 @@
             const btn = document.createElement("div");
             btn.className = "ai-guide-btn";
             btn.innerHTML = `
+                <div class="ai-callout-badge">
+                    <svg viewBox="0 0 24 24" style="width: 16px; height: 16px; fill: white; margin-right: 6px; vertical-align: middle; transform: translateY(-1px);"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                    Say "Hey Vista AI"
+                </div>
                 <svg class="ai-btn-icon" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
                 <div class="ai-guide-ring-text">
                     <svg viewBox="0 0 100 100">
@@ -820,6 +824,18 @@
             document.body.appendChild(btn);
 
             this.floatingBtn = btn;
+
+            // Trigger the expand/collapse callout animation after 2 seconds
+            setTimeout(() => {
+                const badge = btn.querySelector('.ai-callout-badge');
+                if (badge) {
+                    badge.classList.add('show');
+                    // Hide after 8 seconds
+                    setTimeout(() => {
+                        if (badge) badge.classList.remove('show');
+                    }, 8000);
+                }
+            }, 2000);
 
             btn.addEventListener("click", () => {
                 if (this.panel.classList.contains("active")) {
