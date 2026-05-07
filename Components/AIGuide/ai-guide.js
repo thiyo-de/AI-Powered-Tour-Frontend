@@ -804,7 +804,19 @@
         createFloatingButton: function () {
             const btn = document.createElement("div");
             btn.className = "ai-guide-btn";
-            btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>`;
+            btn.innerHTML = `
+                <svg class="ai-btn-icon" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+                <div class="ai-guide-ring-text">
+                    <svg viewBox="0 0 100 100">
+                        <path id="ai-ring-curve" d="M 50, 50 m -40, 0 a 40,40 0 1,1 80,0 a 40,40 0 1,1 -80,0" fill="transparent" />
+                        <text>
+                            <textPath href="#ai-ring-curve" startOffset="0">
+                                3D VISTA AI • 3D VISTA AI • 
+                            </textPath>
+                        </text>
+                    </svg>
+                </div>
+            `;
             document.body.appendChild(btn);
 
             this.floatingBtn = btn;
