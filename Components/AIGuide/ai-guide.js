@@ -815,6 +815,7 @@
                 } else {
                     this.panel.classList.add("active");
                     this.floatingBtn.style.display = "none"; // Hide when dashboard opens
+                    ChatManager.playGreeting();
                 }
             });
             return btn;
@@ -894,19 +895,43 @@
     const ChatManager = {
         isTyping: false,
         _lastUIState: { menu: false, search: false, contact: false },
+        _greetingPlayed: false,
 
-        _monitorUIState: function() {
+        playGreeting: function () {
+            if (this._greetingPlayed) return;
+            this._greetingPlayed = true;
+
+            var greeting = "Hi! I'm your AI campus guide for Mount Zion International School. How can I help you today?";
+            this.addMessage("assistant", greeting);
+
+            if (CONFIG.VOICE_ENABLED) {
+                if (!VoiceManager._useBrowserTTS) {
+                    VoiceManager.speak(greeting, greeting);
+                } else {
+                    VoiceManager._browserSpeak(greeting, greeting);
+                }
+            } else if (CONFIG.SUBTITLES_ENABLED) {
+                SubtitleManager.showWordHighlight(greeting);
+            }
+            this.showSuggestions([
+                { label: "Start Campus Tour", action: "start_guided_tour" },
+                { label: "Sports Facility", action: "navigate_panorama", payload: { location: "Sports Facility" } },
+                { label: "All Locations", action: "open_panorama_list" },
+            ]);
+        },
+
+        _monitorUIState: function () {
             setInterval(() => {
                 if (this.isTyping) return;
                 // GUARD: never overwrite TourManager's own progress UI
                 if (TourManager && TourManager.activePlan) return;
 
-                const isMenu    = TDVBridge.isMenuOpen    && TDVBridge.isMenuOpen();
-                const isSearch  = TDVBridge.isSearchOpen  && TDVBridge.isSearchOpen();
+                const isMenu = TDVBridge.isMenuOpen && TDVBridge.isMenuOpen();
+                const isSearch = TDVBridge.isSearchOpen && TDVBridge.isSearchOpen();
                 const isContact = TDVBridge.isContactOpen && TDVBridge.isContactOpen();
 
-                if (this._lastUIState.menu    !== isMenu    ||
-                    this._lastUIState.search  !== isSearch  ||
+                if (this._lastUIState.menu !== isMenu ||
+                    this._lastUIState.search !== isSearch ||
                     this._lastUIState.contact !== isContact) {
 
                     this._lastUIState = { menu: isMenu, search: isSearch, contact: isContact };
@@ -1136,22 +1161,22 @@
             if (TourManager && TourManager.activePlan && TourManager._isPaused) {
                 return [
                     { label: "Resume Tour", action: "start_guided_tour" },
-                    { label: "Stop Tour",   action: "stop_guided_tour"  },
+                    { label: "Stop Tour", action: "stop_guided_tour" },
                 ];
             }
 
             // ── 2. Open UI component — contextual close chips ───────────────
             if (TDVBridge.isMenuOpen && TDVBridge.isMenuOpen()) {
                 return [
-                    { label: "Close Menu",   action: "close_menu"    },
-                    { label: "Contact Us",   action: "open_contact"  },
-                    { label: "Search",       action: "open_search"   },
+                    { label: "Close Menu", action: "close_menu" },
+                    { label: "Contact Us", action: "open_contact" },
+                    { label: "Search", action: "open_search" },
                 ];
             }
             if (TDVBridge.isSearchOpen && TDVBridge.isSearchOpen()) {
                 return [
-                    { label: "Close Search", action: "close_search"  },
-                    { label: "Menu",         action: "open_menu"     },
+                    { label: "Close Search", action: "close_search" },
+                    { label: "Menu", action: "open_menu" },
                 ];
             }
             if (TDVBridge.isContactOpen && TDVBridge.isContactOpen()) {
@@ -1164,30 +1189,30 @@
             // ── 3. Action-context awareness ────────────────────────────────
             if (lastAction === "toggle_music" || lastAction === "set_music_volume") {
                 return [
-                    { label: "Toggle Music",  action: "toggle_music"   },
-                    { label: "Next Room",     action: "navigate_next"  },
-                    { label: "Look Around",   action: "look_around"    },
+                    { label: "Toggle Music", action: "toggle_music" },
+                    { label: "Next Room", action: "navigate_next" },
+                    { label: "Look Around", action: "look_around" },
                 ];
             }
             if (lastAction === "look_around" || lastAction === "reset_view") {
                 return [
-                    { label: "Next Panorama", action: "navigate_next"         },
-                    { label: "All Locations", action: "open_panorama_list"    },
-                    { label: "Start Tour",    action: "start_guided_tour"     },
+                    { label: "Next Panorama", action: "navigate_next" },
+                    { label: "All Locations", action: "open_panorama_list" },
+                    { label: "Start Tour", action: "start_guided_tour" },
                 ];
             }
             if (lastAction === "toggle_fullscreen") {
                 return [
-                    { label: "Look Around",   action: "look_around"           },
-                    { label: "Next Room",     action: "navigate_next"         },
-                    { label: "All Locations", action: "open_panorama_list"    },
+                    { label: "Look Around", action: "look_around" },
+                    { label: "Next Room", action: "navigate_next" },
+                    { label: "All Locations", action: "open_panorama_list" },
                 ];
             }
             if (lastAction === "get_current_location" || lastAction === "describe_current_location") {
                 return [
-                    { label: "Start Guided Tour", action: "start_guided_tour"  },
-                    { label: "Next Panorama",     action: "navigate_next"      },
-                    { label: "All Locations",     action: "open_panorama_list" },
+                    { label: "Start Guided Tour", action: "start_guided_tour" },
+                    { label: "Next Panorama", action: "navigate_next" },
+                    { label: "All Locations", action: "open_panorama_list" },
                 ];
             }
 
@@ -1195,60 +1220,60 @@
             const loc = (locationName || "").toLowerCase().trim();
 
             if (loc.includes("entrance") || loc === "main entrance") return [
-                { label: "Start Guided Tour", action: "start_guided_tour"                           },
-                nav("Sports Facility",        "Sports Facility"),
-                nav("School Courtyard",       "School Courtyard"),
-                { label: "All Locations",     action: "open_panorama_list"                          },
+                { label: "Start Guided Tour", action: "start_guided_tour" },
+                nav("Sports Facility", "Sports Facility"),
+                nav("School Courtyard", "School Courtyard"),
+                { label: "All Locations", action: "open_panorama_list" },
             ];
             if (loc.includes("sports") || loc.includes("facility")) return [
-                nav("Main Building",          "Main Building"),
-                nav("School Courtyard",       "School Courtyard"),
-                { label: "Start Tour",        action: "start_guided_tour"                           },
-                { label: "Look Around",       action: "look_around"                                 },
+                nav("Main Building", "Main Building"),
+                nav("School Courtyard", "School Courtyard"),
+                { label: "Start Tour", action: "start_guided_tour" },
+                { label: "Look Around", action: "look_around" },
             ];
             if (loc.includes("main building") || loc.includes("front entrance")) return [
-                nav("School Courtyard",       "School Courtyard"),
-                nav("Computer Lab",           "Computer Lab"),
-                { label: "Start Tour",        action: "start_guided_tour"                           },
-                { label: "Look Around",       action: "look_around"                                 },
+                nav("School Courtyard", "School Courtyard"),
+                nav("Computer Lab", "Computer Lab"),
+                { label: "Start Tour", action: "start_guided_tour" },
+                { label: "Look Around", action: "look_around" },
             ];
             if (loc.includes("courtyard")) return [
-                nav("Computer Lab",           "Computer Lab"),
-                nav("Chemistry Lab",          "Chemistry Lab"),
-                nav("Main Building",          "Main Building"),
-                { label: "Look Around",       action: "look_around"                                 },
+                nav("Computer Lab", "Computer Lab"),
+                nav("Chemistry Lab", "Chemistry Lab"),
+                nav("Main Building", "Main Building"),
+                { label: "Look Around", action: "look_around" },
             ];
             if (loc.includes("computer")) return [
-                nav("Chemistry Lab",          "Chemistry Lab"),
-                nav("Library",               "Library"),
-                { label: "Previous Room",     action: "navigate_previous"                           },
-                { label: "Look Around",       action: "look_around"                                 },
+                nav("Chemistry Lab", "Chemistry Lab"),
+                nav("Library", "Library"),
+                { label: "Previous Room", action: "navigate_previous" },
+                { label: "Look Around", action: "look_around" },
             ];
             if (loc.includes("chemistry")) return [
-                nav("Computer Lab",           "Computer Lab"),
-                nav("Library",               "Library"),
-                nav("KG Classroom",          "Kindergarten Classroom"),
-                { label: "Look Around",       action: "look_around"                                 },
+                nav("Computer Lab", "Computer Lab"),
+                nav("Library", "Library"),
+                nav("KG Classroom", "Kindergarten Classroom"),
+                { label: "Look Around", action: "look_around" },
             ];
             if (loc.includes("library")) return [
-                nav("Chemistry Lab",          "Chemistry Lab"),
-                nav("KG Classroom",          "Kindergarten Classroom"),
-                { label: "Previous Room",     action: "navigate_previous"                           },
-                { label: "Look Around",       action: "look_around"                                 },
+                nav("Chemistry Lab", "Chemistry Lab"),
+                nav("KG Classroom", "Kindergarten Classroom"),
+                { label: "Previous Room", action: "navigate_previous" },
+                { label: "Look Around", action: "look_around" },
             ];
             if (loc.includes("kindergarten") || loc.includes("kg class")) return [
-                nav("Library",               "Library"),
-                { label: "Back to Entrance",  action: "navigate_first"                              },
-                { label: "Start Tour Again",  action: "start_guided_tour"                           },
-                { label: "Look Around",       action: "look_around"                                 },
+                nav("Library", "Library"),
+                { label: "Back to Entrance", action: "navigate_first" },
+                { label: "Start Tour Again", action: "start_guided_tour" },
+                { label: "Look Around", action: "look_around" },
             ];
 
             // ── 5. Default fallback ────────────────────────────────────────
             return [
-                { label: "Where Am I?",   action: "get_current_location"  },
-                { label: "Next Panorama", action: "navigate_next"         },
-                { label: "All Locations", action: "open_panorama_list"    },
-                { label: "Start Tour",   action: "start_guided_tour"      },
+                { label: "Where Am I?", action: "get_current_location" },
+                { label: "Next Panorama", action: "navigate_next" },
+                { label: "All Locations", action: "open_panorama_list" },
+                { label: "Start Tour", action: "start_guided_tour" },
             ];
         },
 
@@ -1415,6 +1440,10 @@
     const VoiceManager = {
         recognition: null,
         isListening: false,
+        isAwake: false, // For Wake Word detection
+        wakeWord: "hey vista", // Change this to your preferred wake word
+        _commandTimeout: null,
+        _cancelledAutoListen: false,
         synth: window.speechSynthesis,
         _useBrowserTTS: true, // ← DEFAULT: browser TTS (free). Overridden by init() if user chose AI HD.
         _browserSpeaking: false, // visual state only (orb animation)
@@ -1431,52 +1460,159 @@
                 window.SpeechRecognition || window.webkitSpeechRecognition;
             if (SpeechRecognition) {
                 this.recognition = new SpeechRecognition();
-                this.recognition.continuous = false;
-                this.recognition.interimResults = false;
+                this.recognition.continuous = true;
+                this.recognition.interimResults = true;
 
                 this.recognition.onstart = () => {
                     this.isListening = true;
-                    UI.micBtn.classList.add("active");
-                    UI.orb.classList.remove("idle");
-                    UI.orb.classList.add("listening");
-                    UI.statusText.textContent = "I'm listening...";
+                    if (this.isAwake) {
+                        UI.micBtn.classList.add("active");
+                        UI.orb.classList.remove("idle");
+                        UI.orb.classList.add("listening");
+                    }
                 };
 
                 this.recognition.onend = () => {
                     this.isListening = false;
-                    UI.micBtn.classList.remove("active");
-                    UI.orb.classList.remove("listening");
-                    UI.orb.classList.add("idle");
-                    if (UI.statusText.textContent === "I'm listening...")
-                        UI.statusText.textContent = "";
+                    if (!this._cancelledAutoListen) {
+                        setTimeout(() => {
+                            try { this.recognition.start(); } catch (e) { }
+                        }, 250);
+                    } else if (this.isAwake) {
+                        this.sleep();
+                    }
                 };
 
                 this.recognition.onresult = (event) => {
-                    const transcript = event.results[0][0].transcript;
-                    UI.inputField.value = transcript;
-                    UI.statusText.textContent = `"${transcript}"`;
-                    ChatManager.handleInputSend();
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+
+                    for (let i = Math.max(0, event.resultIndex - 5); i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
+                    }
+
+                    const fullTranscript = (finalTranscript + " " + interimTranscript).toLowerCase().trim();
+
+                    if (!this.isAwake) {
+                        // Check for wake word using fuzzy match
+                        if (fullTranscript.includes(this.wakeWord) ||
+                            fullTranscript.includes("hey ai") ||
+                            fullTranscript.includes("hey vista") ||
+                            fullTranscript.includes("hey") ||
+                            fullTranscript.includes("hey guide") ||
+                            fullTranscript.includes("hey vista ai") ||
+                            fullTranscript.includes("assistant")) {
+
+                            console.log("[WakeWord] Detected wake word:", fullTranscript);
+                            this.wakeUp();
+
+                            // Extract anything said AFTER the wake word
+                            const parts = fullTranscript.split(new RegExp(`(${this.wakeWord}|hey from|hay vista|hey mr|hey guide|assistant)`));
+                            const command = parts.length > 2 ? parts.pop().trim() : "";
+
+                            if (command) {
+                                UI.statusText.textContent = `"${command}"`;
+                                this.resetCommandTimeout(command);
+                            }
+                        }
+                    } else {
+                        // We are awake, capture command
+                        const parts = fullTranscript.split(new RegExp(`(${this.wakeWord}|hey from|hay vista|hey mr|hey guide|assistant)`));
+                        const command = parts.length > 2 ? parts.pop().trim() : fullTranscript;
+
+                        UI.statusText.textContent = `"${command}"`;
+                        this.resetCommandTimeout(command);
+                    }
                 };
 
                 this.recognition.onerror = (event) => {
                     console.error("Speech recognition error:", event.error);
-                    this.isListening = false;
-                    UI.micBtn.classList.remove("active");
-                    UI.orb.classList.remove("listening");
-                    UI.orb.classList.add("idle");
+                    if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                        this._cancelledAutoListen = true;
+                    }
+                    if (this.isAwake) this.sleep();
                 };
+
+                // Start background listening immediately
+                try {
+                    this.recognition.start();
+                } catch (e) {
+                    document.body.addEventListener('click', () => {
+                        if (!this.isListening && !this._cancelledAutoListen) {
+                            try { this.recognition.start(); } catch (err) { }
+                        }
+                    }, { once: true });
+                }
             } else {
                 UI.micBtn.style.display = "none"; // hide if not supported
             }
         },
 
+        wakeUp: function () {
+            this.isAwake = true;
+            // Play a subtle ding sound
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                oscillator.start();
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+                oscillator.stop(audioCtx.currentTime + 0.5);
+            } catch (e) { }
+
+            if (UI.panel && !UI.panel.classList.contains("active")) {
+                UI.panel.classList.add("active");
+                if (UI.floatingBtn) UI.floatingBtn.style.display = "none";
+                ChatManager.playGreeting();
+            }
+
+            UI.micBtn.classList.add("active");
+            UI.orb.classList.remove("idle");
+            UI.orb.classList.add("listening");
+            UI.statusText.textContent = "I'm listening...";
+        },
+
+        sleep: function () {
+            this.isAwake = false;
+            UI.micBtn.classList.remove("active");
+            UI.orb.classList.remove("listening");
+            UI.orb.classList.add("idle");
+            if (UI.statusText.textContent === "I'm listening...") {
+                UI.statusText.textContent = "";
+            }
+            if (this._commandTimeout) clearTimeout(this._commandTimeout);
+        },
+
+        resetCommandTimeout: function (command) {
+            if (this._commandTimeout) clearTimeout(this._commandTimeout);
+            this._commandTimeout = setTimeout(() => {
+                if (command && command.length > 0) {
+                    UI.inputField.value = command;
+                    ChatManager.handleInputSend();
+                }
+                this.sleep();
+            }, 1500);
+        },
+
         toggleListening: function () {
             if (!this.recognition) return;
-            if (this.isListening) {
-                this.recognition.stop();
+            if (this.isAwake) {
+                this.sleep();
             } else {
                 this.stopSpeaking();
-                this.recognition.start();
+                if (!this.isListening) {
+                    try { this.recognition.start(); } catch (e) { }
+                }
+                this.wakeUp();
             }
         },
 
@@ -2549,9 +2685,9 @@
                 else if (CONFIG.SUBTITLES_ENABLED)
                     SubtitleManager.showSubtitle(completionMsg);
                 ChatManager.showSuggestions([
-                    { label: "Start Tour Again", action: "start_guided_tour"                                       },
-                    { label: "Go to Library",    action: "navigate_panorama", payload: { location: "Library" }    },
-                    { label: "All Locations",    action: "open_panorama_list"                                      },
+                    { label: "Start Tour Again", action: "start_guided_tour" },
+                    { label: "Go to Library", action: "navigate_panorama", payload: { location: "Library" } },
+                    { label: "All Locations", action: "open_panorama_list" },
                 ]);
                 return;
             }
@@ -2618,9 +2754,9 @@
                 if (CONFIG.VOICE_ENABLED) VoiceManager.speak(byeMsg, byeMsg);
                 else if (CONFIG.SUBTITLES_ENABLED) SubtitleManager.showSubtitle(byeMsg);
                 ChatManager.showSuggestions([
-                    { label: "Start Tour Again", action: "start_guided_tour"   },
-                    { label: "Where Am I?",      action: "get_current_location" },
-                    { label: "All Locations",    action: "open_panorama_list"   },
+                    { label: "Start Tour Again", action: "start_guided_tour" },
+                    { label: "Where Am I?", action: "get_current_location" },
+                    { label: "All Locations", action: "open_panorama_list" },
                 ]);
             } else {
                 ChatManager.clearSuggestions();
@@ -2831,36 +2967,14 @@
 
             // Init voice
             VoiceManager.init();
-            
+
             // Monitor UI state changes for suggestion chips
             ChatManager._monitorUIState();
 
-            // Auto-open the AI dashboard when the tour loads
+            // Keep AI dashboard closed by default
             setTimeout(function () {
-                UI.panel.classList.add("active");
-                if (UI.floatingBtn) UI.floatingBtn.style.display = "none";
-
-                // ── OPT-4: Greeting — always browser TTS (free) unless user opted into AI HD ──
-                var greeting =
-                    "Hi! I'm your AI campus guide for Mount Zion International School. How can I help you today?";
-                ChatManager.addMessage("assistant", greeting);
-
-                if (CONFIG.VOICE_ENABLED) {
-                    if (!VoiceManager._useBrowserTTS) {
-                        // AI HD mode opted in — use Groq TTS
-                        VoiceManager.speak(greeting, greeting);
-                    } else {
-                        // Default browser mode — free, no quota used
-                        VoiceManager._browserSpeak(greeting, greeting);
-                    }
-                } else if (CONFIG.SUBTITLES_ENABLED) {
-                    SubtitleManager.showWordHighlight(greeting);
-                }
-                ChatManager.showSuggestions([
-                    { label: "Start Campus Tour", action: "start_guided_tour"                                                  },
-                    { label: "Sports Facility",   action: "navigate_panorama", payload: { location: "Sports Facility" }       },
-                    { label: "All Locations",     action: "open_panorama_list"                                                 },
-                ]);
+                // UI.panel.classList.add("active");
+                // if (UI.floatingBtn) UI.floatingBtn.style.display = "none";
             }, 1500);
         });
     }
