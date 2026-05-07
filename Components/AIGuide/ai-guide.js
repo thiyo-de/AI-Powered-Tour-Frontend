@@ -1561,6 +1561,20 @@
                     console.error("Speech recognition error:", event.error);
                     if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
                         this._cancelledAutoListen = true;
+                        
+                        // --- FALLBACK UI ---
+                        if (UI.statusText) {
+                            UI.statusText.innerHTML = `<span style="color: #ffaaaa;">Microphone access denied.</span> Type below 👇`;
+                        }
+                        const badge = document.querySelector('.ai-callout-badge');
+                        if (badge) badge.classList.remove('show');
+                        if (UI.micBtn) {
+                            UI.micBtn.style.opacity = "0.5";
+                            UI.micBtn.style.pointerEvents = "none";
+                        }
+                        if (UI.keyboardOverlay) {
+                            UI.keyboardOverlay.classList.add("active");
+                        }
                     }
                     if (this.isAwake) this.sleep();
                 };
@@ -1576,7 +1590,16 @@
                     }, { once: true });
                 }
             } else {
-                UI.micBtn.style.display = "none"; // hide if not supported
+                // FALLBACK for unsupported browsers
+                UI.micBtn.style.display = "none"; 
+                if (UI.statusText) {
+                    UI.statusText.innerHTML = `<span style="color: #ffaaaa;">Voice not supported.</span> Type below 👇`;
+                }
+                const badge = document.querySelector('.ai-callout-badge');
+                if (badge) badge.classList.remove('show');
+                if (UI.keyboardOverlay) {
+                    UI.keyboardOverlay.classList.add("active");
+                }
             }
         },
 
