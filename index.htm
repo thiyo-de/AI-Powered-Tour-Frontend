@@ -9,7 +9,232 @@
         data-tdv-general-scale="0.5" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <!-- ─── PHASE 1: WebGL DrawingBuffer Preservation (MUST run before tdvplayer.js) ─── -->
+    <script>
+        (function() {
+            // 3DVista uses WebGL internally. By default WebGL sets preserveDrawingBuffer:false,
+            // which means the GPU clears the framebuffer immediately after compositing.
+            // This makes canvas.toDataURL() / drawImage() return a blank image.
+            // We intercept getContext() HERE — before tdvplayer.js loads — to force preservation.
+            var _origGetContext = HTMLCanvasElement.prototype.getContext;
+            HTMLCanvasElement.prototype.getContext = function(type, attrs) {
+                if (type === 'webgl' || type === 'webgl2' || type === 'experimental-webgl') {
+                    attrs = Object.assign({}, attrs || {}, { preserveDrawingBuffer: true });
+                }
+                return _origGetContext.call(this, type, attrs);
+            };
+        })();
+    </script>
+
     <script src="lib/tdvplayer.js?v=1774264168752"></script>
+    
+    <!-- ─── PHASE 2: CUSTOM ORGANIC BLOB-REVEAL TRANSITION ───────────── -->
+    <!-- TIMING STRATEGY:
+         This script runs AFTER tdvplayer.js (which creates TDV namespace) but
+         BEFORE script.js (which defines TDV.Tour.Script.setPlayListSelectedIndex).
+         
+         We use Object.defineProperty SETTER TRAPS on TDV.Tour.Script so that
+         when script.js assigns the navigation methods, our setter auto-wraps them.
+         When script_general.js later reads them for the player's "scripts" object,
+         it gets the already-wrapped version.
+         
+         This is the ONLY timing-safe approach. -->
+    <script>
+        (function() {
+            console.log('[WaveSweep] Phase 2 initializing...');
+            var isTransitioning = false;
+            var pageLoadTime = Date.now(); // Time-based init guard
+
+            // ─── Inject overlay CSS ──────────────────────────────────────────
+            var styleEl = document.createElement('style');
+            styleEl.id = '_blob-reveal-style';
+            styleEl.textContent = [
+                '#pano1-overlay{',
+                '  position:fixed;top:0;left:0;width:100%;height:100%;',
+                '  z-index:999999;pointer-events:none;',
+                '  opacity:1;transition:opacity 0.6s ease-out;',
+                '}',
+                '#pano1-overlay canvas{width:100%;height:100%;display:block;}',
+                '#pano1-overlay.fade-out{opacity:0;}'
+            ].join('');
+            document.head.appendChild(styleEl);
+
+            // ─── playTransition: Horizontal Wave Sweep ──────────────────────
+            function playTransition(callback) {
+                // Skip all navigation within first 3s — engine auto-navigates during setup
+                if (Date.now() - pageLoadTime < 3000) {
+                    console.log('[WaveSweep] Skipping init call (within 3s of load)');
+                    callback();
+                    return;
+                }
+
+                if (isTransitioning) { callback(); return; }
+                isTransitioning = true;
+
+                var sourceCanvas = document.querySelector('#viewer canvas');
+                var dataUrl = '';
+                try {
+                    if (sourceCanvas) dataUrl = sourceCanvas.toDataURL('image/jpeg', 0.85);
+                } catch(e) { console.warn('[WaveSweep] snapshot failed:', e); }
+
+                console.log('[WaveSweep] ▶ Transition fired!');
+
+                var overlay = document.createElement('div');
+                overlay.id = 'pano1-overlay';
+                overlay.style.cssText =
+                    'position:fixed;top:0;left:0;width:100vw;height:100vh;' +
+                    'z-index:2147483647;pointer-events:none;' +
+                    (dataUrl
+                        ? 'background-image:url(' + dataUrl + ');background-size:100% 100%;'
+                        : 'background:rgba(15,15,25,0.95);') +
+                    'background-position:center;';
+                document.body.appendChild(overlay);
+
+                callback();
+
+                var startTime = performance.now();
+                var duration = 1200;
+                var vw = window.innerWidth;
+                var vh = window.innerHeight;
+                var amplitude = vw * 0.06;   // wave width
+                var segments = 8;            // wave curves
+                var segH = vh / segments;
+
+                function easeInOutQuad(t) {
+                    return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2;
+                }
+
+                function drawFrame(now) {
+                    var elapsed = now - startTime;
+                    var progress = Math.min(elapsed / duration, 1);
+                    var t = easeInOutQuad(progress);
+
+                    // Sweep position: from -amplitude to vw+amplitude
+                    var sweepX = -amplitude + t * (vw + amplitude * 3);
+
+                    // Build SVG wave path (right side = white = show old pano)
+                    var d = 'M ' + sweepX + ' 0 ';
+                    for (var i = 0; i < segments; i++) {
+                        var y1 = i * segH;
+                        var y2 = (i + 1) * segH;
+                        var yMid = (y1 + y2) / 2;
+                        // Alternating wave curves with time-based animation
+                        var dir = (i % 2 === 0) ? 1 : -1;
+                        var wavePhase = Math.sin(elapsed * 0.004 + i * 0.8);
+                        var cx = sweepX + dir * amplitude * (0.6 + wavePhase * 0.4);
+                        d += 'Q ' + cx + ' ' + yMid + ' ' + sweepX + ' ' + y2 + ' ';
+                    }
+                    // Close polygon to the RIGHT (the area where old pano is visible)
+                    d += 'L ' + (vw + 50) + ' ' + vh + ' ';
+                    d += 'L ' + (vw + 50) + ' 0 Z';
+
+                    // SVG with soft blur filter for feathered edge
+                    var blur = Math.max(8, 18 * (1 - progress * 0.6));
+                    var svgStr =
+                        '<svg xmlns="http://www.w3.org/2000/svg" width="' + vw + '" height="' + vh + '">' +
+                        '<defs><filter id="b" x="-20%" y="-5%" width="140%" height="110%">' +
+                        '<feGaussianBlur stdDeviation="' + blur.toFixed(1) + '"/>' +
+                        '</filter></defs>' +
+                        '<path d="' + d + '" fill="white" filter="url(#b)"/>' +
+                        '</svg>';
+
+                    var maskUrl = 'url("data:image/svg+xml,' + encodeURIComponent(svgStr) + '")';
+                    overlay.style.webkitMaskImage = maskUrl;
+                    overlay.style.maskImage = maskUrl;
+                    overlay.style.webkitMaskSize = '100% 100%';
+                    overlay.style.maskSize = '100% 100%';
+
+                    // Gentle fade in last 20%
+                    if (progress > 0.8) {
+                        overlay.style.opacity = String(1 - (progress - 0.8) / 0.2);
+                    }
+
+                    if (progress < 1) {
+                        requestAnimationFrame(drawFrame);
+                    } else {
+                        if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                        isTransitioning = false;
+                    }
+                }
+
+                requestAnimationFrame(drawFrame);
+            }
+
+            // ─── SETTER TRAPS on TDV.Tour.Script ─────────────────────────────
+            function installSetterTraps() {
+                if (!window.TDV || !window.TDV.Tour || !window.TDV.Tour.Script) {
+                    console.log('[WaveSweep] Waiting for TDV.Tour.Script...');
+                    setTimeout(installSetterTraps, 5);
+                    return;
+                }
+
+                console.log('[WaveSweep] ✓ TDV.Tour.Script found, installing hooks');
+
+                // Hook Script-level methods (used by most hotspot click handlers)
+                var methodsToHook = ['setPlayListSelectedIndex', 'setMainMediaByIndex', 'setMainMediaByName'];
+
+                methodsToHook.forEach(function(methodName) {
+                    var _storedFn = TDV.Tour.Script[methodName];
+
+                    Object.defineProperty(TDV.Tour.Script, methodName, {
+                        configurable: true,
+                        enumerable: true,
+                        get: function() { return _storedFn; },
+                        set: function(fn) {
+                            console.log('[WaveSweep] ✓ Trapped ' + methodName);
+                            var realFn = fn;
+                            _storedFn = function() {
+                                var args = arguments;
+                                var self = this;
+                                playTransition(function() {
+                                    if (typeof self.skip3DTransitionOnce === 'function') {
+                                        self.skip3DTransitionOnce();
+                                    }
+                                    realFn.apply(self, args);
+                                });
+                            };
+                        }
+                    });
+
+                    if (_storedFn) {
+                        console.log('[WaveSweep] ✓ ' + methodName + ' exists, wrapping now');
+                        var existingFn = _storedFn;
+                        _storedFn = function() {
+                            var args = arguments;
+                            var self = this;
+                            playTransition(function() {
+                                if (typeof self.skip3DTransitionOnce === 'function') {
+                                    self.skip3DTransitionOnce();
+                                }
+                                existingFn.apply(self, args);
+                            });
+                        };
+                    }
+                });
+
+                // Hook Tour-prototype methods (used by panorama-action hotspots
+                // that bypass TDV.Tour.Script and go through tour.setMediaByXxx)
+                if (TDV.Tour && TDV.Tour.prototype) {
+                    ['setMediaByIndex', 'setMediaByName'].forEach(function(method) {
+                        var original = TDV.Tour.prototype[method];
+                        if (typeof original === 'function') {
+                            TDV.Tour.prototype[method] = function() {
+                                var args = arguments;
+                                var self = this;
+                                playTransition(function() {
+                                    original.apply(self, args);
+                                });
+                            };
+                            console.log('[WaveSweep] ✓ Wrapped TDV.Tour.prototype.' + method);
+                        }
+                    });
+                }
+            }
+
+            installSetterTraps();
+        })();
+    </script>
+
     <link rel="preload" href="locale/en.txt?v=1774264168752" as="fetch" crossorigin="anonymous" />
     <link rel="preload" href="script.js?v=1774264168752" as="script" />
     <meta name="description" content="Virtual Tour" />
