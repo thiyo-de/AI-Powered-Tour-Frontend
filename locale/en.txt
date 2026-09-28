@@ -1,0 +1,24 @@
+#: locale=en
+
+## Media
+
+### Title
+panorama_BD807A56_B156_7060_41B7_AF664A7A9456.label = DJI_0491-copy
+panorama_8AA8CD17_86B9_6AE3_41DD_F462A8FB0D9C.label = Pano 1
+panorama_8D64012D_86B9_7D27_41B6_9885332C5CA7.label = Pano 2
+panorama_8D634515_86B9_7AE7_41CF_A26ECBB81F6C.label = Pano 3
+panorama_BDC9E2D5_B156_D060_41E1_D7B9164F2D77.label = Pondicherry dron
+video_BD909C11_B156_57E0_41C0_585B747F5C5B.label = Untitled 34
+
+### Video
+videolevel_BDA1183C_B156_3020_41E2_D02367FD7746.url = media/video_BD909C11_B156_57E0_41C0_585B747F5C5B_en.mp4
+videolevel_BDA1183C_B156_3020_41E2_D02367FD7746.posterURL = media/video_BD909C11_B156_57E0_41C0_585B747F5C5B_poster_en.jpg
+
+### Video Subtitles
+
+## Tour
+
+### Description
+
+### Title
+tour.name = Thiagarajar College

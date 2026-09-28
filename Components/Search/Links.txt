@@ -1,0 +1,18 @@
+Thiagarajar College = https://www.tcarts.in/
+Business Administration = https://www.tcarts.in/dept.php?id=26
+Biotechnology = https://www.tcarts.in/dept.php?id=14
+Commerce = https://www.tcarts.in/dept.php?id=27
+Commerce PA = https://www.tcarts.in/dept.php?id=28
+Commerce CA = https://www.tcarts.in/dept.php?id=30
+Commerce Honors = https://www.tcarts.in/dept.php?id=29
+Commerce Fintech = https://www.tcarts.in/dept.php?id=31
+CA & IT = https://www.tcarts.in/dept.php?id=13
+Computer Science = https://www.tcarts.in/dept.php?id=12
+Chemistry = https://www.tcarts.in/dept.php?id=34
+Economics = https://www.tcarts.in/dept.php?id=19
+English = https://www.tcarts.in/dept.php?id=18
+Mathematics = https://www.tcarts.in/dept.php?id=32
+Microbiology = https://www.tcarts.in/dept.php?id=15
+Physics = https://www.tcarts.in/dept.php?id=33
+Psychology = https://www.tcarts.in/dept.php?id=16
+Tamil = https://www.tcarts.in/dept.php?id=17

@@ -1,0 +1,261 @@
+/* ═══════════════════════════════════════════════════════════
+   WIDGET DOCK — Modern Minimal Glassmorphism
+   GSV Explore · Mute / Unmute
+   Two-Stage Animation: Container Expand → Buttons Pop In
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Dock Container ── */
+.widget-dock {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 100px;
+    z-index: 9998;
+    font-family: 'Satoshi', sans-serif;
+
+    /* ── Premium Navy Glassmorphism ── */
+    background: rgba(30, 58, 95, 0.65);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(150, 192, 230, 0.15);
+    box-shadow:
+        0 8px 40px rgba(30, 58, 95, 0.35),
+        0 0 0 0.5px rgba(150, 192, 230, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
+    /* ── Stage 1: Start collapsed (invisible) ── */
+    clip-path: inset(0 0 0 100% round 100px);
+    will-change: clip-path;
+}
+
+/* ── Stage 1: Background container expands right → left ── */
+.widget-dock.dock-open {
+    animation: dockReveal 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes dockReveal {
+    0% {
+        clip-path: inset(0 0 0 100% round 100px);
+    }
+
+    100% {
+        clip-path: inset(0 0 0 0% round 100px);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BUTTONS — Hidden until Stage 2
+   ═══════════════════════════════════════════════════════════ */
+
+.widget-dock-btn {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 17px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: visible;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+
+    /* Hidden: start scaled down */
+    opacity: 0;
+    transform: scale(0);
+    transition:
+        background 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+        color 0.25s ease;
+}
+
+/* ── Stage 2: Buttons pop in after dock reveal ── */
+.widget-dock.dock-open .widget-dock-btn {
+    animation: btnPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.widget-dock.dock-open .widget-dock-btn:nth-child(1) {
+    animation-delay: 0.7s;
+}
+
+.widget-dock.dock-open .widget-dock-btn:nth-child(3) {
+    animation-delay: 0.85s;
+}
+
+@keyframes btnPop {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ── Divider: fades in with buttons ── */
+.dock-divider {
+    width: 1px;
+    height: 22px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 1px;
+    flex-shrink: 0;
+    opacity: 0;
+    transform: scaleY(0);
+}
+
+.widget-dock.dock-open .dock-divider {
+    animation: divPop 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: 0.75s;
+}
+
+@keyframes divPop {
+    0% {
+        opacity: 0;
+        transform: scaleY(0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   BUTTON HOVER & ACTIVE
+   ═══════════════════════════════════════════════════════════ */
+
+.widget-dock-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.35);
+    transform: scale(1.1) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    color: #fff;
+}
+
+.widget-dock-btn:active {
+    transform: scale(0.92) !important;
+}
+
+/* ── GSV Button — Primary Blue (#2F5E8E) / Sky Blue (#96C0E6) ── */
+.widget-dock-btn.dock-gsv {
+    background: rgba(47, 94, 142, 0.25);
+    border-color: rgba(150, 192, 230, 0.3);
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.widget-dock-btn.dock-gsv:hover {
+    background: rgba(47, 94, 142, 0.45);
+    border-color: rgba(150, 192, 230, 0.5);
+    box-shadow: 0 4px 20px rgba(47, 94, 142, 0.25);
+    color: #fff;
+}
+
+/* ── Mute / Unmute Button ── */
+.widget-dock-btn.dock-mute {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.widget-dock-btn.dock-mute:hover {
+    color: #fff;
+}
+
+/* ── Mute Active (playing) — Academic Orange (#F47C20) ── */
+.widget-dock-btn.dock-mute.music-active {
+    background: rgba(244, 124, 32, 0.3);
+    border-color: rgba(244, 124, 32, 0.4);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(244, 124, 32, 0.2);
+}
+
+.widget-dock-btn.dock-mute.music-active:hover {
+    background: rgba(244, 124, 32, 0.5);
+    box-shadow: 0 4px 20px rgba(244, 124, 32, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TOOLTIPS
+   ═══════════════════════════════════════════════════════════ */
+
+.widget-dock-btn::after {
+    content: attr(data-label);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    font-family: 'Satoshi', sans-serif;
+    letter-spacing: 0.2px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.widget-dock-btn:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+    .widget-dock {
+        bottom: 1rem;
+        right: 1rem;
+        gap: 5px;
+        padding: 5px;
+    }
+
+    .widget-dock-btn {
+        width: 42px;
+        height: 42px;
+        font-size: 15px;
+    }
+
+    .dock-divider {
+        height: 20px;
+    }
+}
+
+@media (max-width: 380px) {
+    .widget-dock {
+        gap: 4px;
+        padding: 4px;
+    }
+
+    .widget-dock-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 14px;
+    }
+
+    .dock-divider {
+        height: 18px;
+    }
+}

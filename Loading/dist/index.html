@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Dedicated Loading Screen — MagicRings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --font-display: 'Plus Jakarta Sans', sans-serif;
+      --font-body: 'Satoshi', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      font-family: var(--font-body);
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      background: #060b0f;
+      font-family: var(--font-body);
+      color: #ffffff;
+      overflow: hidden;
+    }
+
+    /* Fullscreen Screen Container — SINGLE scroll root */
+    #loading-screen {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      overflow-x: hidden;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      scroll-padding-top: 56px;
+    }
+
+    /* WebGL MagicRings Canvas Background */
+    #rings-canvas-host {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Vignette & Depth Overlay */
+    .screen-vignette {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: radial-gradient(circle at center, transparent 35%, rgba(6, 11, 15, 0.75) 85%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* ─── Continuous Page Sections ─── */
+    .page-section {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(60px, 8vh, 90px) 24px clamp(40px, 6vh, 60px);
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    /* ─── Section 1: 360° Campus Gateway Content ─── */
+    .gateway-content {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 32px 24px;
+      max-width: 860px;
+      margin: 0 auto;
+      pointer-events: none;
+    }
+
+    /* Staggered entrance keyframes */
+    @keyframes eyebrowReveal {
+      0% {
+        opacity: 0;
+        transform: translateY(-12px);
+        letter-spacing: 0.1em;
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+        letter-spacing: 0.22em;
+      }
+    }
+
+    @keyframes titleReveal {
+      0% {
+        opacity: 0;
+        transform: translateY(24px) scale(0.96);
+        filter: blur(8px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes subReveal {
+      0% {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes buttonsReveal {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .gateway-eyebrow {
+      display: inline-block;
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #ea580c;
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #f59e0b 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+      animation: eyebrowReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s backwards;
+      will-change: transform, opacity, letter-spacing;
+    }
+
+    .gateway-title {
+      font-family: var(--font-display);
+      font-size: clamp(44px, 7vw, 82px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+      margin-bottom: 18px;
+      max-width: 680px;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+      animation: titleReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;
+      will-change: transform, opacity, filter;
+    }
+
+    .gateway-subtitle {
+      font-family: var(--font-body);
+      font-size: clamp(15px, 1.8vw, 18px);
+      font-weight: 400;
+      letter-spacing: 0.2px;
+      color: rgba(226, 232, 240, 0.8);
+      margin-bottom: 38px;
+      animation: subReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.45s backwards;
+      will-change: transform, opacity;
+    }
+
+    .gateway-buttons {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      pointer-events: auto;
+      animation: buttonsReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.6s backwards;
+      will-change: transform, opacity;
+    }
+
+    .gateway-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 16px 36px;
+      border-radius: 999px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      white-space: nowrap;
+    }
+
+    /* Dark Pill Button (ENTER KRCT TOUR) */
+    .gateway-btn-dark {
+      background: #181d24;
+      background: linear-gradient(180deg, #202731 0%, #13171d 100%);
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .gateway-btn-dark:hover {
+      background: linear-gradient(180deg, #28313d 0%, #181d24 100%);
+      border-color: rgba(255, 255, 255, 0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.65), 0 0 24px rgba(234, 88, 12, 0.25);
+    }
+
+    .gateway-btn-dark:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Light/White Pill Button (ENTER KRCE TOUR) */
+    .gateway-btn-light {
+      background: #ffffff;
+      color: #0b1118;
+      border: 1.5px solid #ffffff;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+    }
+
+    .gateway-btn-light:hover {
+      background: #f1f5f9;
+      border-color: #f1f5f9;
+      transform: translateY(-2px);
+      box-shadow: 0 14px 36px rgba(255, 255, 255, 0.35);
+    }
+
+    .gateway-btn-light:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    /* ─── Spatial VisionOS Floating Glass Card — Netlify-Safe ─── */
+    .campus-card {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 600px;
+      margin: auto;
+      /* High opacity: always stands out from #060b0f even if backdrop-filter fails */
+      background: rgba(10, 17, 28, 0.93);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 28px;
+      padding: clamp(24px, 3.5vw, 40px);
+      box-shadow: 
+        0 32px 72px -12px rgba(0, 0, 0, 0.9),
+        inset 0 1px 0 rgba(255, 255, 255, 0.20),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+      color: #ffffff;
+      box-sizing: border-box;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(32px) scale(0.97);
+      transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Self-contained ambient glow — paints depth INSIDE the card, no backdrop-filter needed */
+    .campus-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 28px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* All direct children sit above the ::before glow layer */
+    .campus-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    #section-krct .campus-card {
+      border-color: rgba(56, 189, 248, 0.32);
+      box-shadow: 
+        0 32px 72px -12px rgba(0, 0, 0, 0.9),
+        0 0 80px -8px rgba(56, 189, 248, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    }
+
+    /* KRCT: cyan top-right + cool blue bottom-left glow, fully self-contained */
+    #section-krct .campus-card::before {
+      background:
+        radial-gradient(ellipse at 85% 8%, rgba(56, 189, 248, 0.24) 0%, transparent 52%),
+        radial-gradient(ellipse at 8% 92%, rgba(29, 78, 216, 0.20) 0%, transparent 52%),
+        radial-gradient(ellipse at 50% 50%, rgba(14, 30, 54, 0.55) 0%, transparent 80%);
+    }
+
+    #section-krce .campus-card {
+      border-color: rgba(244, 124, 32, 0.32);
+      box-shadow: 
+        0 32px 72px -12px rgba(0, 0, 0, 0.9),
+        0 0 80px -8px rgba(244, 124, 32, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.24);
+    }
+
+    /* KRCE: amber top-right + deep blue bottom-left glow, fully self-contained */
+    #section-krce .campus-card::before {
+      background:
+        radial-gradient(ellipse at 85% 8%, rgba(244, 124, 32, 0.24) 0%, transparent 52%),
+        radial-gradient(ellipse at 8% 92%, rgba(47, 94, 142, 0.20) 0%, transparent 52%),
+        radial-gradient(ellipse at 50% 50%, rgba(30, 15, 8, 0.55) 0%, transparent 80%);
+    }
+
+    .page-section.in-view .campus-card {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Top navigation inside card */
+    .campus-top-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .back-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.65);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 4px 8px 4px 0;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .back-nav-btn:hover {
+      color: #ffffff;
+      transform: translateX(-2px);
+    }
+
+    .switch-campus-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: rgba(255, 255, 255, 0.88);
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #section-krct .switch-campus-pill:hover {
+      background: rgba(244, 124, 32, 0.14);
+      border-color: rgba(244, 124, 32, 0.45);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(244, 124, 32, 0.2);
+      transform: translateY(2px);
+    }
+
+    #section-krce .switch-campus-pill:hover {
+      background: rgba(56, 189, 248, 0.14);
+      border-color: rgba(56, 189, 248, 0.45);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(56, 189, 248, 0.2);
+      transform: translateY(-2px);
+    }
+
+    /* Header Line 02/03 & Category */
+    .campus-header-line {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .campus-num {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .line-krct .campus-num { color: #38bdf8; }
+    .line-krce .campus-num { color: #f97316; }
+
+    .campus-rule {
+      width: 44px;
+      height: 2px;
+      border-radius: 999px;
+    }
+
+    .line-krct .campus-rule { background: #38bdf8; }
+    .line-krce .campus-rule { background: #f97316; }
+
+    .campus-category {
+      font-family: var(--font-display);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Eyebrow: CHOOSE THE ... EXPERIENCE */
+    .campus-eyebrow {
+      font-family: var(--font-display);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2.2px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 10px;
+    }
+
+    /* Giant Acronym KRCT / KRCE */
+    .campus-giant-acronym {
+      font-family: var(--font-display);
+      font-size: clamp(68px, 12vw, 104px);
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      margin-bottom: 14px;
+    }
+
+    .acronym-navy {
+      color: #ffffff;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+    }
+    .acronym-blue {
+      color: #38bdf8;
+      text-shadow: 0 0 32px rgba(56, 189, 248, 0.45);
+    }
+    .acronym-orange {
+      color: #F47C20;
+      text-shadow: 0 0 32px rgba(244, 124, 32, 0.45);
+    }
+
+    /* Full College Name */
+    .campus-full-title {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 4.2vw, 36px);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      text-shadow: 0 2px 16px rgba(0, 0, 0, 0.5);
+      margin-bottom: 12px;
+    }
+
+    /* Description */
+    .campus-desc {
+      font-family: var(--font-body);
+      font-size: clamp(14px, 1.8vw, 16px);
+      line-height: 1.55;
+      color: rgba(226, 232, 240, 0.8);
+      margin-bottom: 24px;
+    }
+
+    /* Specs Grid (Campus & Format) */
+    .campus-specs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .spec-col {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding-left: 12px;
+      border-left: 3px solid transparent;
+    }
+
+    .spec-col.bar-blue { border-left-color: #38bdf8; }
+    .spec-col.bar-orange { border-left-color: #F47C20; }
+
+    .spec-label {
+      font-family: var(--font-display);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    .spec-val {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    /* Feature tags row */
+    .campus-tags-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+
+    .feature-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(10px);
+      font-family: var(--font-body);
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .tag-sparkle {
+      font-size: 11px;
+    }
+    .sparkle-blue { color: #38bdf8; text-shadow: 0 0 8px #38bdf8; }
+    .sparkle-orange { color: #F47C20; text-shadow: 0 0 8px #F47C20; }
+
+    /* Action launch button */
+    .campus-action-box {
+      margin-top: auto;
+    }
+
+    .launch-tour-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: fit-content;
+      font-family: var(--font-display);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 16px 34px;
+      border-radius: 999px;
+      cursor: pointer;
+      color: #ffffff;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .launch-krct {
+      background: #181d24;
+      background: linear-gradient(180deg, #202731 0%, #13171d 100%);
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .launch-krct:hover {
+      background: linear-gradient(180deg, #28313d 0%, #181d24 100%);
+      border-color: rgba(56, 189, 248, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.65), 0 0 24px rgba(56, 189, 248, 0.35);
+    }
+
+    .launch-krce {
+      background: #181d24;
+      background: linear-gradient(180deg, #202731 0%, #13171d 100%);
+      color: #ffffff;
+      border: 1.5px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .launch-krce:hover {
+      background: linear-gradient(180deg, #28313d 0%, #181d24 100%);
+      border-color: rgba(244, 124, 32, 0.5);
+      transform: translateY(-2px);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.65), 0 0 24px rgba(244, 124, 32, 0.35);
+    }
+
+    .launch-tour-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Staggered entrance trigger when section scrolls into view */
+    .page-section.in-view .card-header-anim {
+      animation: eyebrowReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+    }
+
+    .page-section.in-view .card-acronym-anim {
+      animation: titleReveal 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.22s backwards;
+    }
+
+    .page-section.in-view .card-title-anim {
+      animation: subReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.35s backwards;
+    }
+
+    .page-section.in-view .card-desc-anim {
+      animation: subReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.45s backwards;
+    }
+
+    .page-section.in-view .card-specs-anim {
+      animation: buttonsReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.55s backwards;
+    }
+
+    .page-section.in-view .card-tags-anim {
+      animation: buttonsReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.65s backwards;
+    }
+
+    .page-section.in-view .card-btn-anim {
+      animation: buttonsReveal 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.75s backwards;
+    }
+
+    /* Top Floating Controls Bar for Testing */
+    .controls-dock {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+      display: flex;
+      gap: 8px;
+    }
+
+    .dock-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: all 0.2s ease;
+    }
+
+    .dock-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
+    /* ─── Mobile Responsiveness ─── */
+    @media (max-width: 640px) {
+      .controls-dock {
+        top: max(12px, env(safe-area-inset-top));
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: calc(100% - 24px);
+        max-width: 380px;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .dock-btn {
+        font-size: 10px;
+        padding: 5px 9px;
+        border-radius: 6px;
+      }
+
+      .page-section {
+        padding: 70px 16px 40px;
+      }
+
+      .gateway-content {
+        padding: 20px 16px;
+        width: 100%;
+      }
+
+      .gateway-eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        margin-bottom: 12px;
+      }
+
+      .gateway-title {
+        font-size: clamp(34px, 9vw, 48px);
+        margin-bottom: 14px;
+      }
+
+      .gateway-subtitle {
+        font-size: 14px;
+        margin-bottom: 28px;
+        padding: 0 12px;
+      }
+
+      .gateway-buttons {
+        flex-direction: column;
+        width: 100%;
+        max-width: 320px;
+        gap: 12px;
+      }
+
+      .gateway-btn {
+        width: 100%;
+        padding: 14px 24px;
+        font-size: 12px;
+        letter-spacing: 1.3px;
+      }
+
+      .campus-card {
+        padding: 24px 20px;
+        border-radius: 22px;
+      }
+
+      .campus-giant-acronym {
+        font-size: clamp(52px, 15vw, 76px);
+        margin-bottom: 8px;
+      }
+
+      .campus-full-title {
+        font-size: clamp(20px, 6vw, 24px);
+        margin-bottom: 10px;
+      }
+
+      .campus-desc {
+        font-size: 13px;
+        margin-bottom: 18px;
+      }
+
+      .campus-specs-grid {
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .spec-val {
+        font-size: 14px;
+      }
+
+      .campus-tags-row {
+        gap: 6px;
+        margin-bottom: 20px;
+      }
+
+      .feature-tag {
+        font-size: 11px;
+        padding: 5px 10px;
+      }
+
+      .launch-tour-btn {
+        width: 100%;
+        padding: 14px 20px;
+        font-size: 12px;
+      }
+    }
+
+    /* Extra compact for short mobile landscape */
+    @media (max-height: 520px) {
+      .controls-dock {
+        top: 8px;
+        gap: 4px;
+      }
+
+      .dock-btn {
+        font-size: 9px;
+        padding: 4px 7px;
+      }
+
+      .page-section {
+        padding: 40px 16px 20px;
+      }
+
+      .gateway-content {
+        padding: 10px 16px;
+      }
+
+      .gateway-eyebrow {
+        font-size: 10px;
+        margin-bottom: 6px;
+      }
+
+      .gateway-title {
+        font-size: 26px;
+        margin-bottom: 6px;
+      }
+
+      .gateway-subtitle {
+        font-size: 12px;
+        margin-bottom: 16px;
+      }
+
+      .gateway-buttons {
+        flex-direction: row;
+        gap: 10px;
+      }
+
+      .gateway-btn {
+        padding: 9px 18px;
+        font-size: 11px;
+      }
+
+      .campus-card {
+        padding: 20px 16px;
+        border-radius: 18px;
+      }
+
+      .campus-giant-acronym {
+        font-size: 40px;
+        margin-bottom: 4px;
+      }
+
+      .campus-full-title {
+        font-size: 18px;
+        margin-bottom: 6px;
+      }
+
+      .campus-desc {
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+
+      .campus-tags-row {
+        margin-bottom: 12px;
+      }
+
+      .launch-tour-btn {
+        padding: 10px 18px;
+      }
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-DAtDSZQ8.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CIEDk-3P.css">
+</head>
+<body>
+
+  <div id="loading-screen">
+    <!-- WebGL MagicRings Mount Host -->
+    <div id="rings-canvas-host"></div>
+    <div class="screen-vignette"></div>
+
+    <!-- Live Color / Parameter Quick Switcher -->
+    <div class="controls-dock">
+      <button class="dock-btn" id="btn-neon">Cyber Neon</button>
+      <button class="dock-btn" id="btn-krce">Orange & Navy</button>
+      <button class="dock-btn" id="btn-gold">Royal Gold</button>
+      <button class="dock-btn" id="btn-reset-progress">Replay Animation</button>
+    </div>
+
+    <!-- SECTION 1: HERO GATEWAY -->
+    <section class="page-section in-view" id="section-hero">
+      <div class="gateway-content">
+        <span class="gateway-eyebrow">360° Campus Gateway</span>
+        <h1 class="gateway-title">Choose your<br />campus</h1>
+        <p class="gateway-subtitle">Step into the KRCT or KRCE virtual tour.</p>
+
+        <div class="gateway-buttons">
+          <button type="button" class="gateway-btn gateway-btn-dark" id="btn-hero-krct">
+            <span>Enter KRCT Tour</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+          </button>
+          <button type="button" class="gateway-btn gateway-btn-light" id="btn-hero-krce">
+            <span>Enter KRCE Tour</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: KRCT (TECHNOLOGY CAMPUS) -->
+    <section class="page-section" id="section-krct">
+      <div class="campus-card">
+        <div class="campus-top-nav">
+          <button type="button" class="back-nav-btn" data-target="section-hero">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            Back to Gateway
+          </button>
+          <button type="button" class="switch-campus-pill" data-target="section-krce">
+            Switch to KRCE
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+          </button>
+        </div>
+
+        <div class="campus-header-line line-krct card-header-anim">
+          <span class="campus-num">02</span>
+          <span class="campus-rule"></span>
+          <span class="campus-category">TECHNOLOGY CAMPUS</span>
+        </div>
+
+        <span class="campus-eyebrow card-header-anim">CHOOSE THE TECHNOLOGY EXPERIENCE</span>
+
+        <h1 class="campus-giant-acronym card-acronym-anim">
+          <span class="acronym-navy">KR</span><span class="acronym-blue">CT</span>
+        </h1>
+
+        <h2 class="campus-full-title card-title-anim">
+          K. Ramakrishnan College<br />of Technology
+        </h2>
+
+        <p class="campus-desc card-desc-anim">
+          Explore the Technology campus through its dedicated immersive 360-degree experience.
+        </p>
+
+        <div class="campus-specs-grid card-specs-anim">
+          <div class="spec-col bar-blue">
+            <span class="spec-label">CAMPUS</span>
+            <span class="spec-val">Technology</span>
+          </div>
+          <div class="spec-col bar-blue">
+            <span class="spec-label">FORMAT</span>
+            <span class="spec-val">360-degree tour</span>
+          </div>
+        </div>
+
+        <div class="campus-tags-row card-tags-anim">
+          <span class="feature-tag"><span class="tag-sparkle sparkle-blue">✦</span> 18+ Interactive Hotspots</span>
+          <span class="feature-tag"><span class="tag-sparkle sparkle-blue">✦</span> Robotics & Drone Labs</span>
+          <span class="feature-tag"><span class="tag-sparkle sparkle-blue">✦</span> Central Library & Arena</span>
+        </div>
+
+        <div class="campus-action-box card-btn-anim">
+          <a href="/KRCT/index.htm" class="launch-tour-btn launch-krct">
+            <span>ENTER KRCT TOUR</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: KRCE (ENGINEERING CAMPUS) -->
+    <section class="page-section" id="section-krce">
+      <div class="campus-card">
+        <div class="campus-top-nav">
+          <button type="button" class="back-nav-btn" data-target="section-hero">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            Back to Gateway
+          </button>
+          <button type="button" class="switch-campus-pill" data-target="section-krct">
+            Switch to KRCT
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          </button>
+        </div>
+
+        <div class="campus-header-line line-krce card-header-anim">
+          <span class="campus-num">03</span>
+          <span class="campus-rule"></span>
+          <span class="campus-category">ENGINEERING CAMPUS</span>
+        </div>
+
+        <span class="campus-eyebrow card-header-anim">CHOOSE THE ENGINEERING EXPERIENCE</span>
+
+        <h1 class="campus-giant-acronym card-acronym-anim">
+          <span class="acronym-navy">KR</span><span class="acronym-orange">CE</span>
+        </h1>
+
+        <h2 class="campus-full-title card-title-anim">
+          K. Ramakrishnan College<br />of Engineering
+        </h2>
+
+        <p class="campus-desc card-desc-anim">
+          Step inside the Engineering campus through its dedicated immersive 360-degree experience.
+        </p>
+
+        <div class="campus-specs-grid card-specs-anim">
+          <div class="spec-col bar-orange">
+            <span class="spec-label">CAMPUS</span>
+            <span class="spec-val">Engineering</span>
+          </div>
+          <div class="spec-col bar-orange">
+            <span class="spec-label">FORMAT</span>
+            <span class="spec-val">360-degree tour</span>
+          </div>
+        </div>
+
+        <div class="campus-tags-row card-tags-anim">
+          <span class="feature-tag"><span class="tag-sparkle sparkle-orange">✦</span> Smart Classrooms & Labs</span>
+          <span class="feature-tag"><span class="tag-sparkle sparkle-orange">✦</span> Innovation & Incubation Center</span>
+          <span class="feature-tag"><span class="tag-sparkle sparkle-orange">✦</span> Sports & Cultural Complex</span>
+        </div>
+
+        <div class="campus-action-box card-btn-anim">
+          <a href="/KRCE/index.htm" class="launch-tour-btn launch-krce">
+            <span>ENTER KRCE TOUR</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    
+
+  </div>
+
+</body>
+</html>

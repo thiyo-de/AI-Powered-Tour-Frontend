@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Thiagarajar College</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" id="metaViewport"
+    content="user-scalable=no, initial-scale=1, width=device-width, viewport-fit=cover" data-tdv-general-scale="0.5" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <script src="lib/tdvplayer.js?v=1785386369511"></script>
+  <link rel="preload" href="locale/en.txt?v=1785386369511" as="fetch" crossorigin="anonymous" />
+  <link rel="preload" href="script.js?v=1785386369511" as="script" />
+  <meta name="description" content="Virtual Tour" />
+  <meta name="theme-color" content="#FFFFFF" />
+  <script src="script.js?v=1785386369511"></script>
+  <!-- FontAwesome & Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+  <!-- Three.js for Procedural WebGL MagicRings Loading Screen -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Dedicated Loading Screen CSS -->
+  <link rel="stylesheet" href="Loading/loading.css" />
+  <!-- Telemetry Tracker (Shift+A for Admin Dashboard) -->
+  <script src="analytics/tracker.js" defer></script>
+  <!-- AI Guide CSS -->
+  <link rel="stylesheet" href="Components/AIGuide/ai-guide.css" />
+  <!-- Fuse.js for fuzzy intent matching -->
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+  <style type="text/css">
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      height: 100vh;
+      width: 100vw;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .fill-viewport {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .fill-viewport.landscape-left {
+      left: env(safe-area-inset-left);
+    }
+
+    .fill-viewport.landscape-right {
+      right: env(safe-area-inset-right);
+    }
+
+    #viewer {
+      z-index: 1;
+    }
+  </style>
+
+</head>
+<body>
+
+  <!-- Dedicated Loading Screen & Entrance Gateway -->
+  <div id="loading-screen">
+    <!-- WebGL MagicRings Background -->
+    <div id="rings-canvas-host"></div>
+    <div class="screen-vignette"></div>
+
+    <!-- VisionOS Glass Gate Card -->
+    <div class="loading-card">
+      <div class="loading-logo-wrap">
+        <img src="College-Logo.png" alt="Thiagarajar College Emblem" onerror="this.src='Loading/logo-emblem.png'">
+      </div>
+
+      <span class="loading-eyebrow">360° Immersive Virtual Campus</span>
+      <h1 class="loading-title">Thiagarajar College</h1>
+      <p class="loading-desc">
+        Step inside the academic blocks, departments, laboratories, and campus grounds through our interactive virtual tour.
+      </p>
+
+      <div class="loading-tags">
+        <span class="loading-tag"><span class="sparkle">✦</span> 360° Panoramas</span>
+        <span class="loading-tag"><span class="sparkle">✦</span> AI Tour Voice Guide</span>
+        <span class="loading-tag"><span class="sparkle">✦</span> Live Interactive Telemetry</span>
+      </div>
+
+      <div class="loading-actions">
+        <button type="button" class="loading-btn btn-enter-sound" id="btn-enter-sound" aria-label="Enter Tour with Sound">
+          <i class="fa-solid fa-headphones"></i>
+          <span>Enter with Sound</span>
+        </button>
+        <button type="button" class="loading-btn btn-enter-muted" id="btn-enter-muted" aria-label="Explore Muted">
+          <i class="fa-solid fa-volume-xmark"></i>
+          <span>Explore Muted</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <script src="Loading/loading.js"></script>
+
+  <div id="viewer" class="fill-viewport"></div>
+  <script>
+    setTimeout(function () {
+      // Load component.js FIRST (injects FontAwesome + Satoshi font)
+      var comp = document.createElement("script");
+      comp.src = "Components/component.js";
+      comp.onload = function () {
+        // Load Music Component FIRST
+        var musicScript = document.createElement("script");
+        musicScript.src = "Components/Music/music.js";
+        musicScript.onload = function () {
+          // Start building out the UI after consent is resolved (user clicks Yes/No)
+          document.addEventListener("musicConsentResolved", function () {
+            var scripts = [
+              "Components/Menu/menu.js",
+              "Components/Contact Us/contact.js",
+              "Components/Search/search.js",
+              "Components/Panolist/Panolist.js",
+              "Components/WidgetDock/widget_dock.js",
+              "Components/WidgetDock/gsv-popup.js",
+              "Components/Logo/logo.js",
+              "Components/Location/location.js",
+              "Components/dept/dept.js",
+              "Components/Language/language.js",
+            ];
+            // Cache-buster: unique per page load — no manual cache clearing needed
+            var cacheBust = "?v=" + Date.now();
+
+            // Load all non-AI components async (parallel, order doesn't matter)
+            scripts.forEach(function (src) {
+              var script = document.createElement("script");
+              script.src = src + cacheBust;
+              script.async = true;
+              document.body.appendChild(script);
+            });
+
+            // AI Guide: MUST load sequentially — ai-guide.js depends on CONFIG
+            // set by config.js. Using onload chain guarantees execution order.
+            var configScript = document.createElement("script");
+            configScript.src = "Components/AIGuide/config.js" + cacheBust;
+            configScript.onload = function () {
+              var guideScript = document.createElement("script");
+              guideScript.src = "Components/AIGuide/ai-guide.js" + cacheBust;
+              document.body.appendChild(guideScript);
+            };
+            document.body.appendChild(configScript);
+          });
+        };
+        document.body.appendChild(musicScript);
+      };
+      document.body.appendChild(comp);
+    }, 200);
+  </script>
+</body>
+
+</html>

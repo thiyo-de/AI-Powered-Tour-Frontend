@@ -1,0 +1,123 @@
+/* ═══════════════════════════════════════════════════════════
+   MUSIC TOGGLE — Standalone Glassmorphism Button
+   Fixed bottom-right, mute / unmute
+   ═══════════════════════════════════════════════════════════ */
+
+.music-toggle-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9998;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    font-size: 18px;
+    color: #fff;
+
+    /* ── Glassmorphism ── */
+    background: rgba(30, 58, 95, 0.55);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    box-shadow:
+        0 8px 32px rgba(30, 58, 95, 0.35),
+        0 0 0 1px rgba(255, 255, 255, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
+    /* ── Entrance animation ── */
+    opacity: 0;
+    transform: scale(0.3);
+    animation: musicBtnIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: 0.3s;
+
+    transition:
+        background 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease,
+        transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes musicBtnIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ── Active (playing) state ── */
+.music-toggle-btn.music-active {
+    background: rgba(46, 139, 87, 0.45);
+    border-color: rgba(46, 139, 87, 0.4);
+    box-shadow:
+        0 8px 28px rgba(46, 139, 87, 0.3),
+        0 0 0 1px rgba(46, 139, 87, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ── Hover ── */
+.music-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.18);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.music-toggle-btn:active {
+    transform: scale(0.92) !important;
+}
+
+/* ── Tooltip ── */
+.music-toggle-btn::after {
+    content: attr(data-label);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: rgba(30, 58, 95, 0.92);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.2s ease;
+    font-family: 'Satoshi', sans-serif;
+    letter-spacing: 0.3px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+}
+
+.music-toggle-btn:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+    .music-toggle-btn {
+        bottom: 1rem;
+        right: 1rem;
+        width: 46px;
+        height: 46px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 380px) {
+    .music-toggle-btn {
+        width: 42px;
+        height: 42px;
+        font-size: 14px;
+    }
+}

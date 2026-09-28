@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env*
+Chatbot-with-admin-panel-AI-Intergration-/chatbot-backend-admin-panel/node_modules/
+Chatbot-with-admin-panel-AI-Intergration-/chatbot-backend-admin-panel/.env*
+Loading/node_modules/
+**/.git_repo_backup/
+**/.git_backup/
+.DS_Store
+Thumbs.db

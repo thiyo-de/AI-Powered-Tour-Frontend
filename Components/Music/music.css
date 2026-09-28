@@ -1,0 +1,138 @@
+.music-consent-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(30, 58, 95, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 100000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    animation: fadeInMusic 0.4s ease forwards;
+}
+
+.music-consent-overlay.closing {
+    animation: fadeOutMusic 0.3s ease forwards;
+}
+
+.music-consent-modal {
+    background: #fff;
+    width: 90%;
+    max-width: 320px;
+    border-radius: 20px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    transform: scale(0.9);
+    animation: scaleUpMusic 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.music-consent-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+    background: linear-gradient(135deg, #2F5E8E, #2E8B57);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    box-shadow: 0 8px 16px rgba(47, 94, 142, 0.25);
+}
+
+.music-consent-title {
+    font-family: 'Satoshi', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1E3A5F;
+    margin: 0 0 10px;
+}
+
+.music-consent-text {
+    font-family: 'Satoshi', sans-serif;
+    font-size: 14px;
+    color: #6B7F99;
+    line-height: 1.5;
+    margin: 0 0 24px;
+}
+
+.music-consent-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.music-consent-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    font-family: 'Satoshi', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.btn-no {
+    background: #F8F8F8;
+    color: #6B7F99;
+}
+
+.btn-no:hover {
+    background: #D1D9E6;
+    color: #1E3A5F;
+}
+
+.btn-yes {
+    background: linear-gradient(135deg, #2F5E8E, #1E3A5F);
+    color: white;
+    box-shadow: 0 4px 12px rgba(47, 94, 142, 0.2);
+}
+
+.btn-yes:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(47, 94, 142, 0.3);
+}
+
+@keyframes fadeInMusic {
+    to { opacity: 1; }
+}
+
+@keyframes fadeOutMusic {
+    to { opacity: 0; }
+}
+
+@keyframes scaleUpMusic {
+    to { transform: scale(1); }
+}
+
+/* Small phones */
+@media (max-width: 380px) {
+    .music-consent-modal {
+        max-width: 280px;
+        padding: 20px;
+        border-radius: 16px;
+    }
+    .music-consent-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+    .music-consent-title {
+        font-size: 17px;
+    }
+    .music-consent-text {
+        font-size: 13px;
+        margin-bottom: 18px;
+    }
+    .music-consent-btn {
+        padding: 10px;
+        font-size: 13px;
+    }
+}
